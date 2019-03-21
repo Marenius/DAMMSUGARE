@@ -1,0 +1,757 @@
+      ### DAMMSUGARE ###
+	  
+	  
+##################################################   SCRIPT  ########################################################	  
+
+dammsug_nedervaning:
+  alias: "Dammsug hela nedervåningen"
+  sequence: 
+  - service: vacuum.start
+    entity_id: vacuum.dammsugare
+
+dammsug_koket:
+  alias: "Dammsug i köket"
+  sequence: 
+  - service: vacuum.send_command
+    data:
+      entity_id: vacuum.dammsugare
+      command: app_zoned_clean
+      params: [[27578,27415,33228,30915,1]]
+            
+dammsug_hallen:
+      alias: "Dammsug i hallen"
+      sequence:
+        - service: vacuum.send_command
+          data:
+            entity_id: vacuum.dammsugare
+            command: app_zoned_clean
+            params: [[26088,25024,33288,27374,1]]
+            
+dammsug_vardagrummet:
+      alias: "Dammsug i vardagrummet"
+      sequence:
+        - service: vacuum.send_command
+          data:
+            entity_id: vacuum.dammsugare
+            command: app_zoned_clean
+            params: [[21596,25170,26096,30970,1]]
+            
+                       
+            
+moppa_nedervaning:
+      alias: "Moppa hela nedervåningen"
+      sequence:
+        - service: vacuum.set_fan_speed
+          data:
+            entity_id: vacuum.dammsugare
+            fan_speed: 105
+        - service: vacuum.start
+          entity_id: vacuum.dammsugare
+
+moppa_koket:
+      alias: "Moppa i köket"
+      sequence:
+        - service: vacuum.set_fan_speed
+          data:
+            entity_id: vacuum.dammsugare
+            fan_speed: 105
+        - service: vacuum.send_command
+          data:
+            entity_id: vacuum.dammsugare
+            command: app_zoned_clean
+            params: [[18237,27521,23187,30471,1],[15059,27224,19059,30624,1]]
+           
+moppa_hallen:
+      alias: "Moppa i hallen"
+      sequence:
+        - service: vacuum.set_fan_speed
+          data:
+            entity_id: vacuum.dammsugare
+            fan_speed: 105
+        - service: vacuum.send_command
+          data:
+            entity_id: vacuum.dammsugare
+            command: app_zoned_clean
+            params: [[16552,23367,23652,27917,1]]
+            
+moppa_vardagrummet:
+      alias: "Moppa i vardagrummet"
+      sequence:
+        - service: vacuum.set_fan_speed
+          data:
+            entity_id: vacuum.dammsugare
+            fan_speed: 105
+        - service: vacuum.send_command
+          data:
+            entity_id: vacuum.dammsugare
+            command: app_zoned_clean
+            params: [[22240,23118,27440,30768,1]]
+            
+dammsugare_serviceplats:
+      alias: "Dammsugare till Serviceplats"
+      sequence:
+        - service: vacuum.send_command
+          data:
+            entity_id: vacuum.dammsugare
+            command: app_goto_target
+            params: [24000, 27500]
+
+
+recreate_map_vacuum:
+    alias: Reset - Karta Dammsugare
+    sequence:
+    - service: vacuum.start
+      entity_id: vacuum.dammsugare
+    - delay: 00:00:12
+    - service: vacuum.stop
+      entity_id: vacuum.dammsugare
+    - delay: 00:00:02
+    - service: vacuum.return_to_base
+      entity_id: vacuum.dammsugare            
+
+dammsugare_abort_go_home:
+    alias: Avbryt städning och kör hem
+    sequence:
+    - service: vacuum.stop
+      entity_id: vacuum.dammsugare
+    - delay: 00:00:02
+    - service: vacuum.return_to_base
+      entity_id: vacuum.dammsugare  
+      
+dammsug_plats:
+    alias: "Starta Dammsugning i rum"
+    sequence:
+      - service: script.turn_on
+        data_template:
+          entity_id: >
+            {% if is_state("input_select.vacuum_room_select", "Köket") %}
+              script.dammsug_koket
+            {% elif is_state("input_select.vacuum_room_select", "Under köksbordet") %}
+              script.dammsug_koksbord
+            {% elif is_state("input_select.vacuum_room_select", "Hela Nedervåningen") %}
+              script.dammsug_nedervaning
+            {% elif is_state("input_select.vacuum_room_select", "Vardagsrummet") %}
+              script.dammsug_vardagrummet
+            {% elif is_state("input_select.vacuum_room_select", "Hallen") %}
+              script.dammsug_hallen             
+            {% endif %}
+            
+moppa_plats:
+    alias: "Starta Moppning i rum"
+    sequence:
+      - service: script.turn_on
+        data_template:
+          entity_id: >
+            {% if is_state("input_select.vacuum_room_select_mop", "Köket") %}
+              script.moppa_koket
+            {% elif is_state("input_select.vacuum_room_select_mop", "Under köksbordet") %}
+              script.moppa_koksbord
+            {% elif is_state("input_select.vacuum_room_select_mop", "Vardagsrummet") %}
+              script.moppa_vardagrummet
+            {% elif is_state("input_select.vacuum_room_select_mop", "Hallen") %}
+              script.moppa_hallen              
+            {% elif is_state("input_select.vacuum_room_select_mop", "Hela Nedervåningen") %}
+              script.moppa_nedervaning               
+            {% endif %}      
+            
+reset_sensor_value:
+    alias: "Nollställ sensor tid"
+    sequence:
+    - service: vacuum.send_command
+      data:
+        entity_id: vacuum.dammsugare
+        command: reset_consumable
+        params: sensor_dirty_time
+		
+		
+		
+		
+		
+		
+		##################################################  AUTOMATIONS  ###########################
+		
+		
+                 #######       DAMMSUGARE      #######
+
+  - id: '687577342332'
+    alias: Update Vacuum State
+    trigger:
+    - entity_id: vacuum.dammsugare
+      platform: state
+      to: docked
+    action:
+    - service: input_select.select_option
+      data:
+        entity_id: input_select.vacuum_room_select
+        option: Välj Rum...
+    - service: input_select.select_option
+      data:
+        entity_id: input_select.vacuum_room_select_mop
+        option: Välj Rum...
+  
+  - id: '6875773477777'
+    alias: Starta Dammsugning Frontend
+    trigger:
+      platform: state
+      entity_id: input_select.vacuum_room_select
+    action:
+      service: script.turn_on
+      entity_id: script.dammsug_plats
+ 
+  - id: '6875773477887'
+    alias: Starta Moppning Frontend
+    trigger:
+      platform: state
+      entity_id: input_select.vacuum_room_select_mop
+    action:
+      service: script.turn_on
+      entity_id: script.moppa_plats		
+	  
+	  
+	  
+	  
+		###################################### SENSORS  ########################################
+		
+- platform: template
+  sensors:
+    vacuum_status:
+      value_template: '{{ states.vacuum.dammsugare.attributes.status }}'
+      friendly_name: 'Status'
+      icon_template: >-
+        {% if is_state('sensor.vacuum_status', 'Cleaning') %}
+          mdi:robot-vacuum
+        {% elif is_state('sensor.vacuum_status', 'Returning home') %}
+          mdi:home
+        {% elif is_state('sensor.vacuum_status', 'Charging') %}
+          mdi:battery-charging-wireless
+        {% elif is_state('sensor.vacuum_status', 'Idle') %}
+          mdi:sleep
+        {% elif is_state('sensor.vacuum_status', 'Error') %}
+          mdi:alert
+        {% elif is_state('sensor.vacuum_status', 'Charger disconnected') %}
+          mdi:power-plug-off
+        {% else %}
+          mdi:help-circle
+        {% endif %}
+    vacuum_status2:
+      value_template: '{{ states.vacuum.dammsugare.attributes.status }}'
+      friendly_name: 'Dammsugare Status'
+      icon_template: >-
+        {% if is_state('sensor.vacuum_status', 'Cleaning') %}
+          mdi:robot-vacuum
+        {% elif is_state('sensor.vacuum_status', 'Returning home') %}
+          mdi:home
+        {% elif is_state('sensor.vacuum_status', 'Charging') %}
+          mdi:battery-charging-wireless
+        {% elif is_state('sensor.vacuum_status', 'Idle') %}
+          mdi:sleep
+        {% elif is_state('sensor.vacuum_status', 'Error') %}
+          mdi:alert
+        {% elif is_state('sensor.vacuum_status', 'Charger disconnected') %}
+          mdi:power-plug-off
+        {% else %}
+          mdi:help-circle
+         {% endif %}
+    vacuum_battery:
+      value_template: '{{ states.vacuum.dammsugare.attributes.battery_level }}'
+      friendly_name: 'Batterinivå'
+      unit_of_measurement: '%'
+      icon_template: >
+        {% if states('sensor.vacuum_battery') | float >= 95 %}
+          mdi:battery
+        {% elif states('sensor.vacuum_battery') | float >= 85 %}
+          mdi:battery-90
+        {% elif states('sensor.vacuum_battery') | float >= 75 %}
+          mdi:battery-80
+        {% elif states('sensor.vacuum_battery') | float >= 65 %}
+          mdi:battery-70
+        {% elif states('sensor.vacuum_battery') | float >= 55 %}
+          mdi:battery-60
+        {% elif states('sensor.vacuum_battery') | float >= 45 %}
+          mdi:battery-50
+        {% elif states('sensor.vacuum_battery') | float >= 35 %}
+          mdi:battery-40
+        {% elif states('sensor.vacuum_battery') | float >= 25 %}
+          mdi:battery-30
+        {% else %}
+          mdi:battery-alert
+        {% endif %}
+    vacuum_fanspeed:
+      value_template: >-
+        {% if is_state_attr('vacuum.dammsugare','fan_speed', 'Quiet') %}
+            Tyst
+        {% elif is_state_attr('vacuum.dammsugare','fan_speed', 'Balanced') %}
+            Balanserad
+        {% elif is_state_attr('vacuum.dammsugare','fan_speed', '103') %}
+            Turbo
+        {% elif is_state_attr('vacuum.dammsugare','fan_speed', ' 100') %}
+            Max
+        {% elif is_state_attr('vacuum.dammsugare','fan_speed', '105') %}
+            Mopp-läge
+        {% else %}
+            Offline
+        {% endif %}
+      friendly_name: 'Fläktläge'
+      icon_template: >
+        mdi:fan
+    vacuum_cleaning_time:
+      value_template: '{{ states.vacuum.dammsugare.attributes.cleaning_time }}'
+      friendly_name: 'Städad tid'
+      unit_of_measurement: 'minuter'
+      icon_template: >
+        mdi:av-timer
+    vacuum_cleaning_area:
+      value_template: '{{ states.vacuum.dammsugare.attributes.cleaned_area }}'
+      friendly_name: 'Städad yta'
+      icon_template: >
+        mdi:image-area
+      unit_of_measurement: 'kvm'
+    vacuum_total_cleaning_time:
+      value_template: '{{ states.vacuum.dammsugare.attributes.total_cleaning_time }}'
+      friendly_name: 'Total Städad tid'
+      icon_template: >
+        mdi:av-timer
+      unit_of_measurement: 'minuter'
+    vacuum_total_cleaning_area:
+      value_template: '{{ states.vacuum.dammsugare.attributes.total_cleaned_area }}'
+      friendly_name: 'Total Städad yta'
+      icon_template: >
+        mdi:image-area
+      unit_of_measurement: 'kvm'
+    vacuum_cleaning_count:
+      value_template: '{{ states.vacuum.dammsugare.attributes.cleaning_count }}'
+      friendly_name: 'Antal städtillfällen'
+      unit_of_measurement: 'st'
+    vacuum_cleansidebrush:
+      value_template: '{{ states.vacuum.dammsugare.attributes.main_brush_left }}'
+      friendly_name: 'Tid till borstbyte - Mitten' 
+      unit_of_measurement: 'timmar'
+      icon_template: >
+        mdi:av-timer
+    vacuum_cleanmainbrush:
+      value_template: '{{ states.vacuum.dammsugare.attributes.side_brush_left }}'
+      friendly_name: 'Tid till borstbyte - Sida' 
+      unit_of_measurement: 'timmar'
+      icon_template: >
+        mdi:av-timer        
+    vacuum_cleanfilter:
+      value_template: '{{ states.vacuum.dammsugare.attributes.filter_left }}'
+      friendly_name: 'Tid till filterbyte'
+      unit_of_measurement: 'timmar'
+      icon_template: >
+        mdi:av-timer
+    vacuum_sensordirtyleft:
+      value_template: '{{ states.vacuum.dammsugare.attributes.sensor_dirty_left }}'
+      friendly_name: 'Tid till rengöring av sensorer'
+      unit_of_measurement: 'timmar'
+      icon_template: >
+        mdi:av-timer        
+    vacuum_operation:
+      value_template: 'Användning'
+    vacuum_accessories:
+      value_template: 'Underhåll'
+
+
+		###################################### LOVELACE  #############################
+		
+		
+cards:
+  - elements:
+      - entity: vacuum.dammsugare
+        icon: 'mdi:bell-ring'
+        style:
+          color: '#3090C7'
+          left: 80%
+          top: 90%
+        tap_action:
+          action: call-service
+          service: vacuum.locate
+        type: icon
+      - entity: vacuum.dammsugare
+        icon: 'mdi:crosshairs'
+        style:
+          color: '#3090C7'
+          left: 65%
+          top: 90%
+        tap_action:
+          action: call-service
+          service: vacuum.clean_spot
+        type: icon
+      - entity: vacuum.dammsugare
+        icon: 'mdi:home'
+        style:
+          color: '#3090C7'
+          left: 50%
+          top: 90%
+        tap_action:
+          action: call-service
+          service: vacuum.return_to_base
+        type: icon
+      - entity: vacuum.dammsugare
+        icon: 'mdi:stop'
+        style:
+          color: '#3090C7'
+          left: 35%
+          top: 90%
+        tap_action:
+          action: call-service
+          service: vacuum.stop
+        type: icon
+      - entity: vacuum.dammsugare
+        icon: 'mdi:play'
+        style:
+          color: '#3090C7'
+          left: 20%
+          top: 90%
+        tap_action:
+          action: call-service
+          service: vacuum.start
+        type: icon
+      - entity: vacuum.dammsugare
+        style:
+          background-color: '#cccccc'
+          border-color: 'rgb(34, 154, 210)'
+          border-radius: 6px
+          color: 'rgb(255, 255, 255)'
+          font-family: Trebuchet MS
+          font-size: 150%
+          font-weight: bold
+          right: 38%
+          top: 14%
+          transform: 'translate(0%,-50%)'
+        tap_action: more-info
+        type: state-label
+      - entity: sensor.vacuum_operation
+        style:
+          background-color: '#3090C7'
+          border-color: 'rgb(34, 154, 210)'
+          border-radius: 6px
+          color: 'rgb(255, 255, 255)'
+          font-family: Trebuchet MS
+          font-size: 90%
+          font-weight: bold
+          left: 1%
+          pointer-events: none
+          top: 10%
+          transform: 'translate(0%,-50%)'
+        type: state-label
+      - entity: sensor.vacuum_accessories
+        style:
+          background-color: '#3090C7'
+          border-color: 'rgb(34, 154, 210)'
+          border-radius: 6px
+          color: 'rgb(255, 255, 255)'
+          font-family: Trebuchet MS
+          font-size: 90%
+          font-weight: bold
+          pointer-events: none
+          right: 1%
+          top: 10%
+          transform: 'translate(0%,-50%)'
+        type: state-label
+      - entity: sensor.vacuum_cleanmainbrush
+        prefix: ' Mittborste: '
+        style:
+          border-color: 'rgb(34, 154, 210)'
+          border-right-style: solid
+          color: '#3090C7'
+          font-family: Trebuchet MS
+          font-size: 76%
+          font-weight: bold
+          pointer-events: none
+          right: 1%
+          top: 35%
+          transform: 'translate(0%,-50%)'
+        type: state-label
+      - entity: sensor.vacuum_cleansidebrush
+        prefix: ' Sidoborste: '
+        style:
+          border-color: 'rgb(34, 154, 210)'
+          border-right-style: solid
+          color: '#3090C7'
+          font-family: Trebuchet MS
+          font-size: 76%
+          font-weight: bold
+          pointer-events: none
+          right: 1%
+          top: 45%
+          transform: 'translate(0%,-50%)'
+        type: state-label
+      - entity: sensor.vacuum_cleanfilter
+        prefix: ' Filter: '
+        style:
+          border-color: 'rgb(34, 154, 210)'
+          border-right-style: solid
+          color: '#3090C7'
+          font-family: Trebuchet MS
+          font-size: 76%
+          font-weight: bold
+          opacity: 0.8
+          pointer-events: none
+          right: 1%
+          top: 55%
+          transform: 'translate(0%,-50%)'
+        type: state-label
+      - entity: sensor.vacuum_sensordirtyleft
+        prefix: 'Sensor: '
+        style:
+          border-color: 'rgb(34, 154, 210)'
+          border-right-style: solid
+          color: '#3090C7'
+          font-family: Trebuchet MS
+          font-size: 76%
+          font-weight: bold
+          pointer-events: none
+          right: 1%
+          top: 65%
+          transform: 'translate(0%,-50%)'
+        type: state-label
+      - entity: sensor.vacuum_status
+        prefix: 'Status: '
+        style:
+          border-color: '#3090C7'
+          border-left-style: solid
+          color: '#3090C7'
+          font-family: Trebuchet MS
+          font-size: 80%
+          font-weight: bold
+          left: 1%
+          pointer-events: none
+          top: 40%
+          transform: 'translate(0%,-50%)'
+        type: state-label
+      - entity: sensor.vacuum_battery
+        prefix: 'Batteri: '
+        style:
+          border-color: 'rgb(34, 154, 210)'
+          border-left-style: solid
+          color: '#3090C7'
+          font-family: Trebuchet MS
+          font-size: 80%
+          font-weight: bold
+          left: 1%
+          pointer-events: none
+          top: 50%
+          transform: 'translate(0%,-50%)'
+        type: state-label
+      - entity: sensor.vacuum_fanspeed
+        prefix: 'Läge: '
+        style:
+          border-color: 'rgb(34, 154, 210)'
+          border-left-style: solid
+          color: '#3090C7'
+          font-family: Trebuchet MS
+          font-size: 80%
+          font-weight: bold
+          left: 1%
+          pointer-events: none
+          top: 60%
+          transform: 'translate(0%,-50%)'
+        type: state-label
+      - entity: sensor.vacuum_cleaning_area
+        prefix: 'Yta: '
+        style:
+          color: '#3090C7'
+          font-family: Trebuchet MS
+          font-size: 80%
+          font-weight: bold
+          left: 31%
+          pointer-events: none
+          top: 79%
+          transform: 'translate(0%,-50%)'
+        type: state-label
+      - entity: sensor.vacuum_cleaning_time
+        prefix: 'Tid: '
+        style:
+          color: '#3090C7'
+          font-family: Trebuchet MS
+          font-size: 80%
+          font-weight: bold
+          left: 51%
+          pointer-events: none
+          top: 79%
+          transform: 'translate(0%,-50%)'
+        type: state-label
+    image: /local/pics/vaccum.png
+    type: picture-elements
+  - cards: null
+    entities:
+      - entity: input_select.vacuum_room_select
+      - entity: script.dammsugare_serviceplats
+        icon: 'mdi:map-marker'
+      - label: Underhåll
+        type: section
+      - entity: input_boolean.hej
+        icon: 'mdi:toolbox'
+        name: Anvisningar och Nollställning
+    type: entities
+type: 'custom:vertical-stack-in-card'
+
+
+#### UNDERHÅLLS KORTET ###
+
+entity: input_boolean.hej
+states:
+  'on':
+    cards:
+      - cards:
+          - elements:
+              - style:
+                  color: black
+                  font-family: Arial
+                  font-size: 15px
+                  font-style: bold
+                  left: 58%
+                  top: 15%
+                text: Filter
+                type: 'custom:text-element'
+              - style:
+                  color: gray
+                  font-family: Arial
+                  font-size: 10px
+                  font-style: null
+                  left: 64%
+                  top: 23%
+                text: Byt ut om ca
+                type: 'custom:text-element'
+              - entity: sensor.vacuum_cleanfilter
+                style:
+                  color: gray
+                  font-family: Arial
+                  font-size: 10px
+                  left: 62%
+                  pointer-events: none
+                  text-align: center
+                  top: 30%
+                type: state-label
+              - service: input_boolean.turn_off
+                service_data:
+                  entity_id: input_boolean.hej
+                style:
+                  color: black
+                  left: 73%
+                  top: 37%
+                title: Utbytt
+                type: service-button
+              - style:
+                  color: black
+                  font-family: Arial
+                  font-size: 15px
+                  font-style: bold
+                  left: 66%
+                  top: 60%
+                text: Sidoborste
+                type: 'custom:text-element'
+              - style:
+                  color: gray
+                  font-family: Arial
+                  font-size: 10px
+                  font-style: null
+                  left: 64%
+                  top: 70%
+                text: Byt ut om ca
+                type: 'custom:text-element'
+              - entity: sensor.vacuum_cleansidebrush
+                style:
+                  color: gray
+                  font-family: Arial
+                  font-size: 10px
+                  font-style: bold
+                  left: 64%
+                  pointer-events: none
+                  text-align: center
+                  top: 76%
+                type: state-label
+              - service: input_boolean.turn_off
+                service_data:
+                  entity_id: input_boolean.hej
+                style:
+                  left: 73%
+                  top: 90%
+                title: Utbytt
+                type: service-button
+            image: /local/pics/vacuumaca1.png
+            type: picture-elements
+          - elements:
+              - style:
+                  color: black
+                  font-family: Arial
+                  font-size: 15px
+                  font-style: bold
+                  left: 68%
+                  top: 15%
+                text: Huvudborste
+                type: 'custom:text-element'
+              - style:
+                  color: gray
+                  font-family: Arial
+                  font-size: 10px
+                  font-style: null
+                  left: 64%
+                  top: 23%
+                text: Rengör om
+                type: 'custom:text-element'
+              - entity: sensor.vacuum_cleanmainbrush
+                style:
+                  color: gray
+                  font-family: Arial
+                  font-size: 10px
+                  left: 64%
+                  pointer-events: none
+                  text-align: center
+                  top: 29%
+                type: state-label
+              - service: input_boolean.turn_off
+                service_data:
+                  entity_id: input_boolean.hej
+                style:
+                  color: black
+                  left: 73%
+                  top: 37%
+                title: Utbytt
+                type: service-button
+              - style:
+                  color: black
+                  font-family: Arial
+                  font-size: 15px
+                  font-style: bold
+                  left: 64%
+                  top: 60%
+                text: Sensorer
+                type: 'custom:text-element'
+              - style:
+                  color: gray
+                  font-family: Arial
+                  font-size: 10px
+                  font-style: null
+                  left: 66%
+                  top: 70%
+                text: Rengör om
+                type: 'custom:text-element'
+              - entity: sensor.vacuum_sensordirtyleft
+                style:
+                  color: gray
+                  font-family: Arial
+                  font-size: 10px
+                  left: 64%
+                  pointer-events: none
+                  text-align: center
+                  top: 75%
+                type: state-label
+              - service: input_boolean.turn_off
+                service_data:
+                  entity_id: input_boolean.hej
+                style:
+                  color: black
+                  left: 73%
+                  top: 90%
+                title: Rengjord
+                type: service-button
+            image: /local/pics/vacuumacb1.png
+            type: picture-elements
+        type: horizontal-stack
+      - aspect_ratio: 50%
+        type: iframe
+        url: 'https://www.youtube.com/embed/CbbaFBFu2Gs'
+    type: 'custom:vertical-stack-in-card'
+type: 'custom:state-switch'		
