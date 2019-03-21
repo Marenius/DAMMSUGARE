@@ -163,7 +163,7 @@ reset_sensor_value:
         params: sensor_dirty_time
 
 
-		##################################################  AUTOMATIONS  ###########################
+##################################################  AUTOMATIONS  ###########################
 
       #######       DAMMSUGARE      #######
 
@@ -200,8 +200,8 @@ reset_sensor_value:
     action:
       service: script.turn_on
       entity_id: script.moppa_plats		
-	###################################### SENSORS  ########################################
-	
+###################################### SENSORS  ########################################
+
 - platform: template
   sensors:
     vacuum_status:
@@ -342,7 +342,7 @@ reset_sensor_value:
       value_template: 'Underhåll'
 
 
-		###################################### LOVELACE  #############################
+###################################### LOVELACE  #############################
 
 cards:
   - elements:
