@@ -153,6 +153,9 @@ moppa_plats:
               script.moppa_nedervaning               
             {% endif %}      
             
+
+#Denna nollställning är för sensorn på dammsugaren. Man får göra för dom andra också och lägga till.
+
 reset_sensor_value:
     alias: "Nollställ sensor tid"
     sequence:
@@ -161,6 +164,8 @@ reset_sensor_value:
         entity_id: vacuum.dammsugare
         command: reset_consumable
         params: sensor_dirty_time
+
+
 
 
 ##################################################  AUTOMATIONS  ###########################
@@ -613,9 +618,9 @@ states:
                   text-align: center
                   top: 30%
                 type: state-label
-              - service: input_boolean.turn_off
+              - service: script.turn_on
                 service_data:
-                  entity_id: input_boolean.hej
+                  entity_id: #script för nollställning av filter
                 style:
                   color: black
                   left: 73%
@@ -651,9 +656,9 @@ states:
                   text-align: center
                   top: 76%
                 type: state-label
-              - service: input_boolean.turn_off
+              - service: script.turn_on
                 service_data:
-                  entity_id: input_boolean.hej
+                  entity_id: #script för nollställning av sidoborste
                 style:
                   left: 73%
                   top: 90%
@@ -690,9 +695,9 @@ states:
                   text-align: center
                   top: 29%
                 type: state-label
-              - service: input_boolean.turn_off
+              - service: script.turn_on
                 service_data:
-                  entity_id: input_boolean.hej
+                  entity_id: #script för nollställning av borste
                 style:
                   color: black
                   left: 73%
@@ -727,9 +732,9 @@ states:
                   text-align: center
                   top: 75%
                 type: state-label
-              - service: input_boolean.turn_off
+              - service: script.turn_on
                 service_data:
-                  entity_id: input_boolean.hej
+                  entity_id: script.reset_sensor_value
                 style:
                   color: black
                   left: 73%
